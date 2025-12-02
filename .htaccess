@@ -11,15 +11,24 @@
 
 # Set correct MIME types for JavaScript modules
 <IfModule mod_mime.c>
-  AddType application/javascript js mjs
-  AddType text/javascript js mjs
-  AddType application/json json
-  AddType image/svg+xml svg svgz
-  AddType text/css css
-  AddType application/wasm wasm
-  AddType model/gltf-binary glb
-  AddType model/gltf+json gltf
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+  AddType text/javascript .js
+  AddType text/javascript .mjs
+  AddType application/json .json
+  AddType image/svg+xml .svg
+  AddType image/svg+xml .svgz
+  AddType text/css .css
+  AddType application/wasm .wasm
+  AddType model/gltf-binary .glb
+  AddType model/gltf+json .gltf
 </IfModule>
+
+# Force MIME type for JS files
+<FilesMatch "\.(js|mjs)$">
+  ForceType application/javascript
+  Header set Content-Type "application/javascript"
+</FilesMatch>
 
 # Enable CORS if needed
 <IfModule mod_headers.c>
