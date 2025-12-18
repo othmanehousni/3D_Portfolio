@@ -248,20 +248,24 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
       
       {/* Error message */}
       {errorMsg && (
-        <group position={[0, 0, 5]}>
+        <group position={[0, 2.5, 0]} renderOrder={100}>
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[6, 1]} />
-            <meshBasicMaterial color="#AA0000" transparent opacity={0.9} />
+            <planeGeometry args={[4, 0.6]} />
+            <meshBasicMaterial color="#AA0000" transparent opacity={0.9} depthTest={false} />
           </mesh>
           
           <Text
             position={[0, 0, 0.1]}
             color="white"
-            fontSize={0.2}
+            fontSize={0.15}
             anchorX="center"
             anchorY="middle"
-            maxWidth={5.5}
+            maxWidth={3.5}
             textAlign="center"
+            renderOrder={101}
+            depthTest={false}
+            outlineWidth={0.02}
+            outlineColor="#000000"
           >
             {errorMsg}
           </Text>

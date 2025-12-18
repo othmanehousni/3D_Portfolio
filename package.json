@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && cp .htaccess dist/",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -15,7 +15,8 @@
     "@react-spring/three": "9.7.3",
     "@react-three/drei": "^9.105.6",
     "@react-three/fiber": "^8.16.3",
-    "caniuse-lite": "^1.0.30001751",
+    "baseline-browser-mapping": "^2.9.10",
+    "caniuse-lite": "^1.0.30001760",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0"

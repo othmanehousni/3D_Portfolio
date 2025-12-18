@@ -43,7 +43,7 @@ const renderContent = {
         neo-brutalism-red py-4 px-8 text-white mx-5 ">
             Hey! I welcome you to my Portfolio! I'm <span className="font-semibold">Othmane Housni 👋</span>,
             <br />
-            a moroccan second-year student at EPFL, studying Computer Science!
+            a moroccan third-year student at EPFL, studying Computer Science!
         </h1>
     )
 }
