@@ -58,8 +58,8 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
       scene.background = new THREE.Color('#111111');
       scene.fog = new THREE.FogExp2('#111111', 0.05);
       
-      // Position camera for puzzle view - start closer to fill screen
-      const baseZ = 2; // Base camera distance - closer to fill screen
+      // Position camera for puzzle view - balanced distance to see everything
+      const baseZ = 5; // Base camera distance - good viewing distance
       camera.position.set(0, 0, baseZ);
       camera.lookAt(0, 0, 0);
       
@@ -189,16 +189,16 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
   
   // Calculate scale factor based on revealed facts - larger as more facts are revealed
   const factsCount = revealedFacts.length;
-  const baseScale = 1.5; // Start larger to fill screen
-  const scaleFactor = baseScale + (factsCount * 0.2); // Scale up by 20% per fact
+  const baseScale = 1.0; // Start at normal size
+  const scaleFactor = baseScale + (factsCount * 0.15); // Scale up by 15% per fact
   
   // Adjust camera position dynamically based on facts to maintain full screen coverage
   useEffect(() => {
     if (isActive && camera) {
-      const baseZ = 2;
-      // As facts increase, we can adjust camera slightly, but scaling the group is better
-      // Keep camera position relatively stable, let scaling handle the size
-      camera.position.z = baseZ;
+      const baseZ = 5;
+      // As facts increase, move camera slightly further back to accommodate larger scale
+      const adjustedZ = baseZ - (factsCount * 0.3); // Move back slightly as scale increases
+      camera.position.z = Math.max(3, adjustedZ); // Don't go closer than z=3
       camera.lookAt(0, 0, 0);
       if (camera.fov) {
         camera.fov = 75;
