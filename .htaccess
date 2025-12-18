@@ -13,8 +13,10 @@
 <IfModule mod_mime.c>
   AddType application/javascript .js
   AddType application/javascript .mjs
+  AddType application/javascript .jsx
   AddType text/javascript .js
   AddType text/javascript .mjs
+  AddType text/javascript .jsx
   AddType application/json .json
   AddType image/svg+xml .svg
   AddType image/svg+xml .svgz
@@ -24,15 +26,18 @@
   AddType model/gltf+json .gltf
 </IfModule>
 
-# Force MIME type for JS files
-<FilesMatch "\.(js|mjs)$">
+# Force MIME type for JS/JSX files
+<FilesMatch "\.(js|mjs|jsx)$">
   ForceType application/javascript
-  Header set Content-Type "application/javascript"
 </FilesMatch>
 
-# Enable CORS if needed
+# Set Content-Type header and CORS for JavaScript files
 <IfModule mod_headers.c>
-  <FilesMatch "\.(js|mjs|json|css|svg|wasm|glb|gltf)$">
+  <FilesMatch "\.(js|mjs|jsx)$">
+    Header set Content-Type "application/javascript; charset=utf-8"
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+  <FilesMatch "\.(json|css|svg|wasm|glb|gltf)$">
     Header set Access-Control-Allow-Origin "*"
   </FilesMatch>
 </IfModule>
