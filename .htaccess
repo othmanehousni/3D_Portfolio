@@ -3,9 +3,16 @@
   RewriteEngine On
   RewriteBase /
 
-  # Redirect all requests to index.html for SPA routing
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
+  # Don't rewrite files that exist
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Don't rewrite asset files (js, css, images, etc.)
+  RewriteCond %{REQUEST_URI} \.(js|mjs|jsx|css|json|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot|glb|gltf|wasm|mp3|mp4)$ [NC]
+  RewriteRule ^ - [L]
+
+  # Redirect all other requests to index.html for SPA routing
   RewriteRule . /index.html [L]
 </IfModule>
 
