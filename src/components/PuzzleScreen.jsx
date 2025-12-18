@@ -187,18 +187,17 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
     }
   };
   
-  // Calculate scale factor based on revealed facts - larger as more facts are revealed
+  // Adjust camera position dynamically based on facts - zoom out as more facts are revealed
   const factsCount = revealedFacts.length;
-  const baseScale = 1.0; // Start at normal size
-  const scaleFactor = baseScale + (factsCount * 0.15); // Scale up by 15% per fact
   
-  // Adjust camera position dynamically based on facts to maintain full screen coverage
   useEffect(() => {
     if (isActive && camera) {
       const baseZ = 5;
-      // As facts increase, move camera slightly further back to accommodate larger scale
-      const adjustedZ = baseZ - (factsCount * 0.3); // Move back slightly as scale increases
-      camera.position.z = Math.max(3, adjustedZ); // Don't go closer than z=3
+      // As facts increase, move camera further back to show more area (zoom out)
+      // This makes the "screen" larger as facts increase
+      const zoomOutAmount = factsCount * 0.8; // Move back 0.8 units per fact
+      const adjustedZ = baseZ + zoomOutAmount;
+      camera.position.z = adjustedZ;
       camera.lookAt(0, 0, 0);
       if (camera.fov) {
         camera.fov = 75;
@@ -215,10 +214,8 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
         <meshBasicMaterial color="#111111" />
       </mesh>
       
-      {/* Active puzzle - scaled based on facts */}
-      <group scale={[scaleFactor, scaleFactor, scaleFactor]}>
-        {renderPuzzle()}
-      </group>
+      {/* Active puzzle - no scaling, camera handles the view size */}
+      {renderPuzzle()}
       
       {/* Back button - fixed size, not scaled */}
       <group position={[-5.5, 3.3, 0]}>
