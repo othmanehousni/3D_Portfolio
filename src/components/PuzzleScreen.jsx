@@ -58,9 +58,16 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
       scene.background = new THREE.Color('#111111');
       scene.fog = new THREE.FogExp2('#111111', 0.05);
       
-      // Position camera for puzzle view
-      camera.position.set(0, 0, 6);
+      // Position camera for puzzle view - start closer to fill screen
+      const baseZ = 2; // Base camera distance - closer to fill screen
+      camera.position.set(0, 0, baseZ);
       camera.lookAt(0, 0, 0);
+      
+      // Adjust camera FOV to fill screen better
+      if (camera.fov) {
+        camera.fov = 75; // Wider field of view
+        camera.updateProjectionMatrix();
+      }
       
       // Reset error message and facts
       setErrorMsg('');
@@ -180,18 +187,40 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
     }
   };
   
+  // Calculate scale factor based on revealed facts - larger as more facts are revealed
+  const factsCount = revealedFacts.length;
+  const baseScale = 1.5; // Start larger to fill screen
+  const scaleFactor = baseScale + (factsCount * 0.2); // Scale up by 20% per fact
+  
+  // Adjust camera position dynamically based on facts to maintain full screen coverage
+  useEffect(() => {
+    if (isActive && camera) {
+      const baseZ = 2;
+      // As facts increase, we can adjust camera slightly, but scaling the group is better
+      // Keep camera position relatively stable, let scaling handle the size
+      camera.position.z = baseZ;
+      camera.lookAt(0, 0, 0);
+      if (camera.fov) {
+        camera.fov = 75;
+        camera.updateProjectionMatrix();
+      }
+    }
+  }, [factsCount, isActive, camera]);
+  
   return (
     <group userData={{ isPuzzleScreen: true }}>
-      {/* Background */}
+      {/* Background - full screen coverage */}
       <mesh position={[0, 0, -10]}>
-        <planeGeometry args={[50, 50]} />
+        <planeGeometry args={[100, 100]} />
         <meshBasicMaterial color="#111111" />
       </mesh>
       
-      {/* Active puzzle */}
-      {renderPuzzle()}
+      {/* Active puzzle - scaled based on facts */}
+      <group scale={[scaleFactor, scaleFactor, scaleFactor]}>
+        {renderPuzzle()}
+      </group>
       
-      {/* Back button */}
+      {/* Back button - fixed size, not scaled */}
       <group position={[-5.5, 3.3, 0]}>
         <mesh
           position={[0, 0, 0]}
@@ -216,7 +245,7 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
         </Text>
       </group>
       
-      {/* Progress bar - enhanced visibility */}
+      {/* Progress bar - enhanced visibility - fixed size, not scaled */}
       <group position={[0, -3.3, 1]} renderOrder={10}>
         {/* Background */}
         <mesh position={[0, 0, 0]} renderOrder={11}>
@@ -246,7 +275,7 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
         </Text>
       </group>
       
-      {/* Error message */}
+      {/* Error message - fixed size, not scaled */}
       {errorMsg && (
         <group position={[0, 2.5, 0]} renderOrder={100}>
           <mesh position={[0, 0, 0]}>
