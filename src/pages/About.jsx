@@ -1,19 +1,82 @@
-import React, { useState, Suspense, useRef } from 'react';
+import React, { useState, Suspense, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows, PerspectiveCamera } from '@react-three/drei';
 import PuzzleRoom from '../components/PuzzleRoom';
 
 const About = () => {
   const [revealedFacts, setRevealedFacts] = useState([]);
+  const [canvasHeight, setCanvasHeight] = useState('100vh');
+  const [isDesktop, setIsDesktop] = useState(false);
+  const factsSectionRef = useRef(null);
   
   const handlePuzzleProgress = (facts) => {
     setRevealedFacts(facts);
   };
 
+  // Check if desktop on mount and resize
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
+  // Update canvas height based on facts section height (desktop only)
+  useEffect(() => {
+    const updateCanvasHeight = () => {
+      if (factsSectionRef.current && isDesktop) {
+        const factsHeight = factsSectionRef.current.scrollHeight;
+        const viewportHeight = window.innerHeight;
+        
+        // If facts section is taller than viewport, use its height
+        // Otherwise, use viewport height
+        if (factsHeight > viewportHeight) {
+          setCanvasHeight(`${factsHeight}px`);
+        } else {
+          setCanvasHeight('100vh');
+        }
+      }
+    };
+
+    // Initial calculation
+    updateCanvasHeight();
+
+    // Update on window resize
+    window.addEventListener('resize', updateCanvasHeight);
+    
+    // Use ResizeObserver to watch for content changes in facts section
+    let resizeObserver;
+    if (factsSectionRef.current) {
+      resizeObserver = new ResizeObserver(updateCanvasHeight);
+      resizeObserver.observe(factsSectionRef.current);
+    }
+
+    // Also update when facts change
+    const timeoutId = setTimeout(updateCanvasHeight, 100);
+
+    return () => {
+      window.removeEventListener('resize', updateCanvasHeight);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      clearTimeout(timeoutId);
+    };
+  }, [revealedFacts, isDesktop]);
+
   return (
-    <section className="flex flex-col md:flex-row min-h-screen w-full bg-gray-900">
+    <section 
+      className="flex flex-col md:flex-row w-full bg-gray-900" 
+      style={isDesktop ? { minHeight: canvasHeight } : { minHeight: '100vh' }}
+    >
       {/* 3D Puzzle Room Section */}
-      <div className="w-full md:w-3/5 h-[70vh] md:h-screen relative">
+      <div 
+        className="w-full md:w-3/5 h-[70vh] md:h-full relative" 
+        style={isDesktop ? { height: canvasHeight } : {}}
+      >
         <Canvas shadows dpr={[1, 2]} className="h-full w-full">
           <Suspense fallback={null}>
             <PerspectiveCamera makeDefault fov={60} />
@@ -63,7 +126,7 @@ const About = () => {
       </div>
       
       {/* About Me Information Section */}
-      <div className="w-full md:w-2/5 p-4 md:p-8 bg-gray-900 overflow-y-auto text-amber-100">
+      <div ref={factsSectionRef} className="w-full md:w-2/5 p-4 md:p-8 bg-gray-900 overflow-y-auto text-amber-100">
         <h1 className="text-3xl md:text-4xl font-bold font-poppins text-amber-300 mb-4 md:mb-6">The Mystery Room</h1>
         
         <p className="text-base md:text-lg text-amber-100 mb-4 md:mb-6">
