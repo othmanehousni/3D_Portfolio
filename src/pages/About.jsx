@@ -27,6 +27,8 @@ const About = () => {
 
   // Update canvas height based on facts section height (desktop only)
   useEffect(() => {
+    let timeoutId;
+    
     const updateCanvasHeight = () => {
       if (factsSectionRef.current && isDesktop) {
         const factsHeight = factsSectionRef.current.scrollHeight;
@@ -34,32 +36,42 @@ const About = () => {
         
         // If facts section is taller than viewport, use its height
         // Otherwise, use viewport height
-        if (factsHeight > viewportHeight) {
-          setCanvasHeight(`${factsHeight}px`);
-        } else {
-          setCanvasHeight('100vh');
-        }
+        const newHeight = factsHeight > viewportHeight ? `${factsHeight}px` : '100vh';
+        
+        // Only update if height actually changed to prevent unnecessary re-renders
+        setCanvasHeight(prevHeight => {
+          if (prevHeight !== newHeight) {
+            return newHeight;
+          }
+          return prevHeight;
+        });
       }
+    };
+
+    // Debounced update function to prevent rapid changes
+    const debouncedUpdate = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateCanvasHeight, 150);
     };
 
     // Initial calculation
     updateCanvasHeight();
 
-    // Update on window resize
-    window.addEventListener('resize', updateCanvasHeight);
+    // Update on window resize (debounced)
+    window.addEventListener('resize', debouncedUpdate);
     
-    // Use ResizeObserver to watch for content changes in facts section
+    // Use ResizeObserver to watch for content changes in facts section (debounced)
     let resizeObserver;
     if (factsSectionRef.current) {
-      resizeObserver = new ResizeObserver(updateCanvasHeight);
+      resizeObserver = new ResizeObserver(debouncedUpdate);
       resizeObserver.observe(factsSectionRef.current);
     }
 
-    // Also update when facts change
-    const timeoutId = setTimeout(updateCanvasHeight, 100);
+    // Also update when facts change (debounced)
+    debouncedUpdate();
 
     return () => {
-      window.removeEventListener('resize', updateCanvasHeight);
+      window.removeEventListener('resize', debouncedUpdate);
       if (resizeObserver) {
         resizeObserver.disconnect();
       }

@@ -11,6 +11,15 @@
 
 body {
   font-family: "Work Sans", sans-serif;
+  /* Prevent zoom on iOS and other mobile devices */
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+}
+
+html {
+  /* Prevent zoom on content changes */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body:has(.card[data-color="blue"]:hover) {

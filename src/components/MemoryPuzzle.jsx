@@ -33,10 +33,10 @@ const MemoryPuzzle = ({ onProgress, puzzleColor = '#43A047', setErrorMsg }) => {
   
   // Initialize game
   useEffect(() => {
-    // Create pairs of cards
+    // Create pairs of cards - ensure symbol is always a string
     const cardPairs = cardSymbols.flatMap(card => [
-      { ...card, id: Math.random() },
-      { ...card, id: Math.random() }
+      { ...card, id: Math.random(), symbol: String(card.symbol) },
+      { ...card, id: Math.random(), symbol: String(card.symbol) }
     ]);
     
     // Shuffle cards
@@ -50,6 +50,7 @@ const MemoryPuzzle = ({ onProgress, puzzleColor = '#43A047', setErrorMsg }) => {
       
       return {
         ...card,
+        symbol: String(card.symbol), // Ensure symbol is always a string
         position: [
           (col - 2) * 1.2, // Centered horizontally
           1 - row * 1.5,   // Start from top
@@ -66,7 +67,7 @@ const MemoryPuzzle = ({ onProgress, puzzleColor = '#43A047', setErrorMsg }) => {
   // Handle card click
   const handleCardClick = (index) => {
     // Prevent clicking if the game is locked or the card is already flipped/matched
-    if (locked || flippedIndices.includes(index) || cards[index].matched) {
+    if (locked || flippedIndices.includes(index) || cards[index]?.matched) {
       return;
     }
     
@@ -87,11 +88,27 @@ const MemoryPuzzle = ({ onProgress, puzzleColor = '#43A047', setErrorMsg }) => {
       
       const firstIndex = newFlippedIndices[0];
       const secondIndex = newFlippedIndices[1];
+      
+      // Get current cards to check match
       const firstCard = cards[firstIndex];
       const secondCard = cards[secondIndex];
       
-      // Check if they match
-      if (firstCard.symbol === secondCard.symbol) {
+      // Ensure cards exist and have symbols
+      if (!firstCard || !secondCard || !firstCard.symbol || !secondCard.symbol) {
+        setTimeout(() => {
+          setFlippedIndices([]);
+          setLocked(false);
+        }, 1000);
+        return;
+      }
+      
+      // Check if they match by comparing symbols (must match exactly)
+      // Convert to string to ensure type safety
+      const firstSymbol = String(firstCard.symbol).trim();
+      const secondSymbol = String(secondCard.symbol).trim();
+      const isMatch = firstSymbol === secondSymbol;
+      
+      if (isMatch) {
         // Set cards as matched
         setTimeout(() => {
           setCards(prev => prev.map((card, idx) => 
@@ -102,7 +119,23 @@ const MemoryPuzzle = ({ onProgress, puzzleColor = '#43A047', setErrorMsg }) => {
           
           // Add to matched pairs
           const newPair = firstCard.symbol;
-          setMatchedPairs(prev => [...prev, newPair]);
+          setMatchedPairs(prev => {
+            const updatedPairs = [...prev, newPair];
+            
+            // Calculate progress and update facts displayed
+            const newProgress = Math.min(100, Math.round((updatedPairs.length / cardSymbols.length) * 100));
+            setProgress(newProgress);
+            
+            // Reveal facts based on pairs matched
+            if (onProgress) {
+              // Send puzzle type identifier to prevent switching puzzles
+              const factsToShow = progressFacts.slice(0, updatedPairs.length);
+              onProgress(factsToShow, "memory");
+            }
+            
+            return updatedPairs;
+          });
+          
           setRecentMatch({ indices: [firstIndex, secondIndex], time: Date.now() });
           
           // Reset flipped
@@ -111,17 +144,6 @@ const MemoryPuzzle = ({ onProgress, puzzleColor = '#43A047', setErrorMsg }) => {
           
           // Hide recent match after animation
           setTimeout(() => setRecentMatch(null), 2000);
-          
-          // Calculate progress and update facts displayed
-          const newProgress = Math.min(100, Math.round((matchedPairs.length + 1) / cardSymbols.length * 100));
-          setProgress(newProgress);
-          
-          // Reveal facts based on pairs matched
-          if (onProgress) {
-            // Send puzzle type identifier to prevent switching puzzles
-            const factsToShow = progressFacts.slice(0, matchedPairs.length + 1);
-            onProgress(factsToShow, "memory"); // Add puzzle type identifier
-          }
         }, 500);
       } else {
         // No match, flip back after a delay
