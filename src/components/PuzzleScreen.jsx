@@ -187,24 +187,18 @@ const PuzzleScreen = ({ isActive, puzzle, onBack, onProgress }) => {
     }
   };
   
-  // Adjust camera position dynamically based on facts - zoom out as more facts are revealed
-  const factsCount = revealedFacts.length;
-  
+  // Keep camera position fixed - no automatic zooming
   useEffect(() => {
     if (isActive && camera) {
-      const baseZ = 5;
-      // As facts increase, move camera further back to show more area (zoom out)
-      // This makes the "screen" larger as facts increase
-      const zoomOutAmount = factsCount * 0.8; // Move back 0.8 units per fact
-      const adjustedZ = baseZ + zoomOutAmount;
-      camera.position.z = adjustedZ;
+      // Set fixed camera position - don't change based on facts
+      camera.position.set(0, 0, 5);
       camera.lookAt(0, 0, 0);
       if (camera.fov) {
         camera.fov = 75;
         camera.updateProjectionMatrix();
       }
     }
-  }, [factsCount, isActive, camera]);
+  }, [isActive, camera]);
   
   return (
     <group userData={{ isPuzzleScreen: true }}>
